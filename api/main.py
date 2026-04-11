@@ -7,7 +7,7 @@ app = FastAPI(title="Game on Paper API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
-    allow_methods=["GET"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
