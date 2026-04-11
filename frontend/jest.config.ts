@@ -7,7 +7,10 @@ const config: Config = {
     "^@/(.*)$": "<rootDir>/$1",
   },
   transform: {
-    "^.+\\.(ts|tsx)$": ["ts-jest", { tsconfig: { jsx: "react" } }],
+    "^.+\\.(ts|tsx)$": [
+      "ts-jest",
+      { tsconfig: { jsx: "react", types: ["jest", "node"] } },
+    ],
   },
 };
 
