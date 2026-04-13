@@ -104,11 +104,15 @@ async def get_scoreboard(
         params["season"] = year
 
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(ESPN_URLS[sport], params=params, headers=headers)
-        resp.raise_for_status()
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(ESPN_URLS[sport], params=params, headers=headers)
+            resp.raise_for_status()
+        data = resp.json()
+    except Exception as exc:
+        logger.warning("ESPN request failed for %s week %s: %s", sport, week, exc)
+        return {"games": [], "error": "No data available for this week/season"}
 
-    data = resp.json()
     events = data.get("events", [])
     logger.info("ESPN returned %d events for %s week %s", len(events), sport, week)
     try:

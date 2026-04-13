@@ -13,12 +13,12 @@ export default async function ScoreboardPage({ params, searchParams }: Props) {
   const { sport } = await params;
   const { year, week, group } = await searchParams;
 
-  const currentYear = String(new Date().getFullYear());
-  const resolvedYear = year ?? currentYear;
+  // Default to 2025 — last completed season for both CFB and NFL
+  const resolvedYear = year ?? "2025";
   const resolvedWeek = parseInt(week ?? "1", 10);
   const resolvedGroup = group ?? "80";
 
-  const { games } = await fetchScoreboard(
+  const { games = [] } = await fetchScoreboard(
     sport,
     resolvedYear,
     resolvedWeek,
