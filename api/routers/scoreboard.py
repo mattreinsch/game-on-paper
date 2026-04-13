@@ -1,8 +1,11 @@
+import logging
 from typing import Optional
 import httpx
 from fastapi import APIRouter, HTTPException, Query
 
 from cache import cache_get, cache_set
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/scoreboard", tags=["scoreboard"])
 
@@ -100,12 +103,20 @@ async def get_scoreboard(
     if year:
         params["season"] = year
 
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
     async with httpx.AsyncClient() as client:
-        resp = await client.get(ESPN_URLS[sport], params=params)
+        resp = await client.get(ESPN_URLS[sport], params=params, headers=headers)
         resp.raise_for_status()
 
     data = resp.json()
-    result = {"games": [normalize_game(e) for e in data.get("events", [])]}
+    events = data.get("events", [])
+    logger.info("ESPN returned %d events for %s week %s", len(events), sport, week)
+    try:
+        games = [normalize_game(e) for e in events]
+    except Exception as exc:
+        logger.exception("normalize_game failed: %s", exc)
+        raise HTTPException(status_code=500, detail=f"Data normalization error: {exc}")
+    result = {"games": games}
 
     cache_set(cache_key, result, ttl=10800)  # 3 hours
     return result
